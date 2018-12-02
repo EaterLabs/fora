@@ -1,0 +1,9 @@
+{
+  "name": "@eater/fora",
+  "version": "1.0.0",
+  "description": "A simple PubSub server",
+  "main": "index.ts",
+  "repository": "https://github.com/EaterLabs/fora.git",
+  "author": "eater <=@eater.me>",
+  "license": "MIT"
+}
