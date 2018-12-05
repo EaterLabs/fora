@@ -1,0 +1,16 @@
+#!/usr/bin/env perl6
+use v6.c;
+use EaterLabs::Fora;
+
+my \dist = Router.new;
+
+my $supplier-out = Supplier.new;
+my $supplier-in = Supplier.new;
+
+$supplier-out.Supply.tap(-> $item { dd $item });
+
+say ~dist.add-stream(in => $supplier-in.Supply, out => $supplier-out.new);
+dist.process-message(EventMessage.new(event-id => ~UUID.new, body => { "hello" => "no" }));
+$supplier-in.emit(EventMessage.new(event-id => ~UUID.new, body => { "hello" => "no" }));
+
+dd dist;
