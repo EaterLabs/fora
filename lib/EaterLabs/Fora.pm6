@@ -17,11 +17,20 @@ class Stream {
   has Tap $!in-tap;
   has Supplier $.out;
   has Router $.router;
-  has $.id = UUID.new;
+  has $.id = ~UUID.new;
   has $.live is rw = False;
 
-  method subscribe($topic) {
+  method subscribe(SubscribeMessage $msg) {
+    my $topic = $msg.topic;
+    return $!subscriptions{$topic} if $!subscriptions{$topic}:exists;
+    my $subscription-id = ~UUID.new;
+    $!subscriptions{$topic} = $subscription-id;
+    $.router.subscribe($topic, $.id);
+    return $subscription-id;
+  }
 
+  method publish(EventMessage $message) {
+    $.emit($message);
   }
 
   method tap {
@@ -67,7 +76,17 @@ class Router is export {
   method process-message(Stream $sender, Message $message) {
     given $message {
       when EventMessage {
+        return if $!topics{$message.topic}:!exists;
 
+        my $event = EventMessage.new(
+          event-id => $message.event-id//~UUID.new,
+          body => $message.body,
+          topic => $message.topic,
+        );
+
+        $!streams{$_}.publish($event) for $!topics{$message.topic};
+
+        $sender.emit: AckMessage.new(tid => $message.tid, event-id=>$event.event-id)
       }
 
       when SubscribeMessage {

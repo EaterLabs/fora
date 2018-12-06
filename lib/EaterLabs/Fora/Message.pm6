@@ -1,5 +1,6 @@
 use v6.c;
 use JSON::Fast;
+use UUID;
 
 role Serializable {
     method serialize {
@@ -70,9 +71,16 @@ class UnsubscribeMessage is Message {
   has Str $.id is rw;
 }
 
+subset BasicType where * ~~ Associative|List|Str|Bool|Version|Numeric;
+
 class EventMessage is Message {
   has Str $.type = "event";
   has Str $.topic is rw;
-  has Str $.event-id is rw = UUID.new;
-  has Hash $.body is rw;
+  has Str $.event-id is rw = ~UUID.new;
+  has BasicType $.body is rw;
+}
+
+class AckMessage is Message {
+  has Str $.type = "ack";
+  has Str $.event-id is rw;
 }
